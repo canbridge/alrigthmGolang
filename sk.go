@@ -20,10 +20,13 @@ func InitSkip(size int) *SkipList {
 	//	for i := 0; i <= size; i++ {
 	//		update[i] = new(node)
 	//	}
-	log.Println("update,11111", update)
 	node := &node{forward: update}
 	skip := &SkipList{level: 0, size: size, head: node}
 	return skip
+}
+
+func (list *SkipList) getRandLevel() int {
+	return 3
 }
 
 func (list *SkipList) Insert(key int) {
@@ -31,34 +34,64 @@ func (list *SkipList) Insert(key int) {
 	update := make([]*node, list.size+1)
 	current := list.head
 	for i := list.size; i >= 0; i-- {
-		// 最终current 保存小于key的最大值的node
-		log.Println(1111, "current", current.forward[0])
+		// 最终current 保存每一层（level）小于key的最大值的node
+
 		for current.forward[i] != nil && current.forward[i].key < key {
 			current = current.forward[i]
 		}
 		update[i] = current
 	}
 
-	log.Println("current, update", current.forward[0], update)
-
 	current = current.forward[0]
-	log.Println("current, if nil", current)
-	if current == nil {
-		// 这种情况实际上是没有插入数据插入数据
 
-	} else if current.key == key {
-		// 需要插入的数据已经存在于列表中了
+	if current == nil {
+		// 这种情况实际上是在之前没有插入数据
+		insertLv := list.getRandLevel()
+		insertForwards := make([]*node, insertLv+1)
+		insertNode := &node{key: key, forward: insertForwards}
+		for i := insertLv; i >= 0; i-- {
+			//			log.Println(insertForwards, i, update)
+			insertNode.forward[i] = update[i].forward[i]
+			update[i].forward[i] = insertNode
+		}
+		if insertLv > list.level {
+			list.level = insertLv
+		}
 
 	} else if current.key > key {
+		// 这种情况实际上是在之前没有插入数据
+		insertLv := list.getRandLevel()
+		insertForwards := make([]*node, insertLv+1)
+		insertNode := &node{key: key, forward: insertForwards}
+		for i := insertLv; i >= 0; i-- {
+			insertNode.forward[i] = update[i].forward[i]
+			update[i].forward[i] = insertNode
+		}
 
+	} else if current.key == key {
+		// 需要插入的数据已经存在于列表中了， 不需要插入
 	}
 
 }
 
+func (list *SkipList) iteral() {
+	head := list.head
+	c := head.forward[0]
+	for c != nil {
+		log.Println(c.key)
+		c = c.forward[0]
+	}
+	log.Println("head", head)
+	next := head.forward[0]
+	log.Println("next", next.forward[0])
+}
+
 func main() {
-	log.Println("21")
+
 	list := InitSkip(3)
-	log.Println(list.head.forward[2])
-	list.Insert(4)
-	log.Println(list.head.forward[0])
+	for _, v := range []int{1, 98, 89, 87, 87, 65, 11} {
+		list.Insert(v)
+	}
+
+	list.iteral()
 }
