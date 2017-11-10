@@ -74,7 +74,7 @@ func last_k(head *Node, k int) {
 
 }
 
-// 链表的反转
+// 链表的反转, 用指针的方式
 func reverse(head *Node) *Node {
 	p1 := head
 	p2 := p1.next
@@ -90,6 +90,18 @@ func reverse(head *Node) *Node {
 		p1 = p2
 		p2 = p3
 
+	}
+}
+
+// 链表反转， 用递归的方式
+func reverseRecursily(head *Node) *Node {
+	if head.next == nil {
+		return head
+	} else {
+		newhead := reverseRecursily(head.next)
+		head.next.next = head
+		head.next = nil
+		return newhead
 	}
 }
 

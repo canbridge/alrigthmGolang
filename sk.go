@@ -29,13 +29,26 @@ func (list *SkipList) getRandLevel() int {
 	return 3
 }
 
+func (list *SkipList) update() {
+	insertLv := list.getRandLevel()
+	insertForwards := make([]*node, insertLv+1)
+	insertNode := &node{key: key, forward: insertForwards}
+	for i := insertLv; i >= 0; i-- {
+		insertNode.forward[i] = update[i].forward[i]
+		update[i].forward[i] = insertNode
+	}
+	if insertLv > list.level {
+		list.level = insertLv
+	}
+
+}
+
 func (list *SkipList) Insert(key int) {
 	// update 用来保存每一行最后一个检索到节点的列表
 	update := make([]*node, list.size+1)
 	current := list.head
 	for i := list.size; i >= 0; i-- {
-		// 最终current 保存每一层（level）小于key的最大值的node
-
+		// 最终current 最下面一层链表的小于key的最大值的node
 		for current.forward[i] != nil && current.forward[i].key < key {
 			current = current.forward[i]
 		}
@@ -50,14 +63,12 @@ func (list *SkipList) Insert(key int) {
 		insertForwards := make([]*node, insertLv+1)
 		insertNode := &node{key: key, forward: insertForwards}
 		for i := insertLv; i >= 0; i-- {
-			//			log.Println(insertForwards, i, update)
 			insertNode.forward[i] = update[i].forward[i]
 			update[i].forward[i] = insertNode
 		}
 		if insertLv > list.level {
 			list.level = insertLv
 		}
-
 	} else if current.key > key {
 		// 这种情况实际上是在之前没有插入数据
 		insertLv := list.getRandLevel()
@@ -68,6 +79,9 @@ func (list *SkipList) Insert(key int) {
 			update[i].forward[i] = insertNode
 		}
 
+		if insertLv > list.level {
+			list.level = insertLv
+		}
 	} else if current.key == key {
 		// 需要插入的数据已经存在于列表中了， 不需要插入
 	}
